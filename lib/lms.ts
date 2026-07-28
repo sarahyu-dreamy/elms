@@ -41,14 +41,18 @@ export const SESSIONS_PER_WEEK = 4
 export const SESSIONS_PER_TERM = TERM_WEEKS * SESSIONS_PER_WEEK // 56
 
 /**
- * 한 레벨을 한 학기에 끝내는 구성.
- *   6단원 × 2주 = 12주 (단원당 8차시)
- *   + 중간 점검 1주 + 기말 평가·발표 1주 = 14주
- *   합계 56차시로 주 4회에 정확히 맞습니다.
+ * 한 레벨을 한 학기에 끝내는 구성 — 주당 한 단원.
+ *   14단원 × 1주 = 14주, 단원당 4차시.
+ *
+ * 별도의 평가 주차를 빼지 않고, 7단원과 14단원을 통합·복습 단원으로 둡니다.
+ * 중간 점검과 기말 평가가 그 두 단원 안에서 이뤄지므로 진도와 평가가 분리되지 않습니다.
  */
-export const UNITS_PER_LEVEL = 6
-export const WEEKS_PER_UNIT = 2
-export const SESSIONS_PER_UNIT = WEEKS_PER_UNIT * SESSIONS_PER_WEEK // 8
+export const UNITS_PER_LEVEL = 14
+export const WEEKS_PER_UNIT = 1
+export const SESSIONS_PER_UNIT = WEEKS_PER_UNIT * SESSIONS_PER_WEEK // 4
+
+/** 통합·복습 단원의 순번 (중간 점검 / 기말 평가) */
+export const REVIEW_UNIT_ORDERS = [7, 14]
 
 export const MATERIAL_TYPES = [
   { value: 'reading', label: '읽기' },

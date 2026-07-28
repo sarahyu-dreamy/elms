@@ -1,4 +1,6 @@
+import Link from 'next/link'
 import { CEFR_BAND, SKILLS } from '@/lib/cefr'
+import { seedFor } from '@/lib/seed/a1-1'
 import { EEP_LEVELS, CEP_LEVELS, vocabDelta, type LevelSpec } from '@/lib/levels'
 import {
   PROGRAMS,
@@ -164,8 +166,17 @@ function ProgramSection({
                     <p className="mt-0.5 text-xs text-slate-400">+{vocabDelta(l.code)}</p>
                   </td>
                   {showUnits && (
-                    <td className="px-4 py-3 text-right text-xs text-slate-400">
-                      {UNITS_PER_LEVEL}개
+                    <td className="px-4 py-3 text-right">
+                      {seedFor(l.code) ? (
+                        <Link
+                          href={`/teacher/curriculum/${l.code.replace('.', '-')}`}
+                          className="text-xs font-medium text-sky-700 hover:underline"
+                        >
+                          {UNITS_PER_LEVEL}단원 보기
+                        </Link>
+                      ) : (
+                        <span className="text-xs text-slate-300">미작성</span>
+                      )}
                     </td>
                   )}
                 </tr>
