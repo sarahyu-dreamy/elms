@@ -1,56 +1,49 @@
 -- A1.1 교육과정 원안 적재
+--
 -- lib/seed/a1-1.ts 에서 생성된 SQL 입니다.
 -- 이 파일을 직접 고치지 말고 원본 TS 를 고친 뒤 다시 생성하세요.
 --
--- 먼저 docs/tables.sql 로 units / can_do_statements 테이블을 만들어야 합니다.
--- 두 번 실행하면 중복 적재되니 한 번만 실행하세요.
+-- 사전 조건: docs/tables.sql 로 units · can_do_statements · grammar_points ·
+--            lexical_items 테이블이 만들어져 있어야 합니다.
+--
+-- 두 번 실행하면 중복 적재됩니다. 한 번만 실행하세요.
 
 begin;
 
+-- 1. 단원 14개
 insert into app_6.units
   (level_code, order_index, title, title_ko, theme, weeks, overview, is_published)
 values
-  ('A1.1', 1, 'Hello!', '인사와 이름', '만남', 1, '문법: be동사 (I am / You are), 인칭대명사 주격 I·you, 알파벳 대소문자
-대표 어휘: hello, hi, good morning, good afternoon, goodbye, name, nice, meet, teacher, student, friend
-신규 어휘 17개', true),
-  ('A1.1', 2, 'Numbers & Age', '숫자와 나이', '나', 1, '문법: How old are you? / I am ~ years old, 숫자 1–20, be동사 의문문 기초
-대표 어휘: one, two, three, ten, twenty, age, old, how, year, birthday, number
-신규 어휘 17개', true),
-  ('A1.1', 3, 'My Family', '우리 가족', '가족', 1, '문법: this / that, 소유격 my·your·his·her, be동사 3인칭 (He is / She is)
-대표 어휘: father, mother, brother, sister, grandfather, grandmother, family, baby, tall, kind
-신규 어휘 17개', true),
-  ('A1.1', 4, 'My Things', '내 물건', '사물', 1, '문법: 명사 복수형, 관사 a / an, What’s this?
-대표 어휘: pen, pencil, book, notebook, eraser, ruler, bag, desk, chair, key
-신규 어휘 17개', true),
-  ('A1.1', 5, 'Colors & Shapes', '색깔과 모양', '묘사', 1, '문법: 형용사 + 명사 어순, It is + 형용사, 형용사 나열
-대표 어휘: red, blue, yellow, green, black, white, circle, square, big, small, long
-신규 어휘 17개', true),
-  ('A1.1', 6, 'My Classroom', '우리 교실', '학교', 1, '문법: There is / There are, some / many 기초
-대표 어휘: classroom, board, window, door, clock, map, picture, computer, wall, floor
+  ('A1.1', 1, 'Hello!', '인사와 이름', '만남', 1, '문법: be동사 (I am / You are), 인칭대명사 주격 I · you, 알파벳 대소문자
+신규 어휘 12개', true),
+  ('A1.1', 2, 'Numbers & Age', '숫자와 나이', '나', 1, '문법: 숫자 1–20, How old are you? / I am ~ years old
+신규 어휘 13개', true),
+  ('A1.1', 3, 'My Family', '우리 가족', '가족', 1, '문법: this / that, 소유격 my · your · his · her, be동사 3인칭 (He is / She is)
+신규 어휘 14개', true),
+  ('A1.1', 4, 'My Things', '내 물건', '사물', 1, '문법: 명사 복수형, 관사 a / an, What’s this? / It’s a ~
+신규 어휘 15개', true),
+  ('A1.1', 5, 'Colors & Shapes', '색깔과 모양', '묘사', 1, '문법: 형용사 + 명사 어순, It is + 형용사
+신규 어휘 16개', true),
+  ('A1.1', 6, 'My Classroom', '우리 교실', '학교', 1, '문법: There is / There are, some / many
 신규 어휘 17개', true),
   ('A1.1', 7, 'Review 1', '중간 통합', '복습·점검', 1, '문법: 1–6단원 통합
 통합·복습 단원 (신규 어휘 없음)', true),
   ('A1.1', 8, 'Where Is It?', '어디에 있나요', '위치', 1, '문법: 장소 전치사 in / on / under / next to, Where is ~?
-대표 어휘: in, on, under, next to, behind, room, table, bed, kitchen, where
 신규 어휘 17개', true),
-  ('A1.1', 9, 'Food I Like', '좋아하는 음식', '음식', 1, '문법: 일반동사 현재형 긍정·부정 (I like / I don’t like)
-대표 어휘: rice, bread, milk, water, juice, apple, egg, meat, fish, cake
-신규 어휘 17개', true),
-  ('A1.1', 10, 'Animals', '동물', '동물', 1, '문법: 일반동사 의문문 Do you like ~?, Yes, I do. / No, I don’t.
-대표 어휘: dog, cat, bird, rabbit, horse, lion, tiger, elephant, monkey, pet
-신규 어휘 17개', true),
-  ('A1.1', 11, 'My Day', '하루 일과', '일상', 1, '문법: 현재시제 일과 표현, 시각 말하기 (at seven), 시간 전치사 at
-대표 어휘: get up, wash, eat, go, study, play, sleep, morning, evening, o’clock
-신규 어휘 17개', true),
+  ('A1.1', 9, 'Food I Like', '좋아하는 음식', '음식', 1, '문법: 일반동사 현재형 긍정 (I like ~), 일반동사 부정 (I don’t like ~)
+신규 어휘 18개', true),
+  ('A1.1', 10, 'Animals', '동물', '동물', 1, '문법: 일반동사 의문문 (Do you like ~?), Yes, I do. / No, I don’t.
+신규 어휘 18개', true),
+  ('A1.1', 11, 'My Day', '하루 일과', '일상', 1, '문법: 현재시제 일과 표현, 시각 말하기 (at seven / o’clock), 시간 전치사 at
+신규 어휘 19개', true),
   ('A1.1', 12, 'Can You?', '할 수 있는 것', '능력', 1, '문법: can / can’t, Can you ~? 의문문
-대표 어휘: swim, ride, sing, dance, draw, cook, read, write, speak, well
-신규 어휘 16개', true),
+신규 어휘 20개', true),
   ('A1.1', 13, 'My Friends', '내 친구', '관계', 1, '문법: 3인칭 단수 현재형 (He likes / She has), 인물 묘사 형용사
-대표 어휘: friend, classmate, funny, smart, quiet, have, has, together, best, know
-신규 어휘 14개', true),
+신규 어휘 21개', true),
   ('A1.1', 14, 'About Me', '나를 소개해요', '통합·발표', 1, '문법: 1–13단원 통합
 통합·복습 단원 (신규 어휘 없음)', true);
 
+-- 2. 성취기준
 insert into app_6.can_do_statements (unit_id, skill, statement_ko, order_index)
 select u.id, v.skill, v.statement, v.ord
 from (values
@@ -167,6 +160,254 @@ from (values
   (14, 'writing', '자기소개 글을 다섯 문장 이상으로 쓸 수 있다.', 7),
   (14, 'writing', '대문자·마침표·띄어쓰기를 지켜 글을 쓸 수 있다.', 8)
 ) as v(unit_order, skill, statement, ord)
+join app_6.units u
+  on u.level_code = 'A1.1' and u.order_index = v.unit_order;
+
+-- 3. 문법 항목
+insert into app_6.grammar_points
+  (unit_id, title, can_do, cefr_level, order_index, is_published)
+select u.id, v.title, v.can_do, 'A1', v.ord, true
+from (values
+  (1, 'be동사 (I am / You are)', '자기를 소개하는 문장을 만들 수 있다.', 10),
+  (1, '인칭대명사 주격 I · you', '나와 상대를 가리켜 말할 수 있다.', 11),
+  (1, '알파벳 대소문자', '이름을 바르게 표기할 수 있다.', 12),
+  (2, '숫자 1–20', '스무 개까지 수를 세어 말할 수 있다.', 20),
+  (2, 'How old are you? / I am ~ years old', '나이를 묻고 답할 수 있다.', 21),
+  (3, 'this / that', '가까운 것과 먼 것을 가리켜 말할 수 있다.', 30),
+  (3, '소유격 my · your · his · her', '누구의 것인지 밝혀 말할 수 있다.', 31),
+  (3, 'be동사 3인칭 (He is / She is)', '제3자를 소개할 수 있다.', 32),
+  (4, '명사 복수형', '하나와 여럿을 구별해 말할 수 있다.', 40),
+  (4, '관사 a / an', '셀 수 있는 명사 앞에 관사를 붙여 말할 수 있다.', 41),
+  (4, 'What’s this? / It’s a ~', '사물의 이름을 묻고 답할 수 있다.', 42),
+  (5, '형용사 + 명사 어순', '사물을 꾸며 말할 수 있다.', 50),
+  (5, 'It is + 형용사', '사물의 성질을 말할 수 있다.', 51),
+  (6, 'There is / There are', '무엇이 있는지 말할 수 있다.', 60),
+  (6, 'some / many', '막연한 수량을 말할 수 있다.', 61),
+  (7, '1–6단원 통합', null, 70),
+  (8, '장소 전치사 in / on / under / next to', '위치를 나타내어 말할 수 있다.', 80),
+  (8, 'Where is ~?', '물건이 어디 있는지 물을 수 있다.', 81),
+  (9, '일반동사 현재형 긍정 (I like ~)', '좋아하는 것을 말할 수 있다.', 90),
+  (9, '일반동사 부정 (I don’t like ~)', '싫어하는 것을 말할 수 있다.', 91),
+  (10, '일반동사 의문문 (Do you like ~?)', '상대의 취향을 물을 수 있다.', 100),
+  (10, 'Yes, I do. / No, I don’t.', '짧은 대답으로 응답할 수 있다.', 101),
+  (11, '현재시제 일과 표현', '반복되는 일상을 말할 수 있다.', 110),
+  (11, '시각 말하기 (at seven / o’clock)', '몇 시에 하는지 말할 수 있다.', 111),
+  (11, '시간 전치사 at', '시각을 문장에 넣을 수 있다.', 112),
+  (12, 'can / can’t', '할 수 있는 일과 없는 일을 말할 수 있다.', 120),
+  (12, 'Can you ~? 의문문', '상대가 할 수 있는지 물을 수 있다.', 121),
+  (13, '3인칭 단수 현재형 (He likes / She has)', '제3자의 행동과 취향을 말할 수 있다.', 130),
+  (13, '인물 묘사 형용사', '사람의 성격을 말할 수 있다.', 131),
+  (14, '1–13단원 통합', null, 140)
+) as v(unit_order, title, can_do, ord)
+join app_6.units u
+  on u.level_code = 'A1.1' and u.order_index = v.unit_order;
+
+-- 4. 어휘
+insert into app_6.lexical_items
+  (unit_id, headword, meaning_ko, pos, item_type, cefr_level, is_published)
+select u.id, v.headword, v.meaning_ko, v.pos, v.item_type, 'A1', true
+from (values
+  (1, 'hello', '안녕하세요', 'phrase', 'idiom'),
+  (1, 'hi', '안녕', 'phrase', 'idiom'),
+  (1, 'good morning', '좋은 아침', 'phrase', 'collocation'),
+  (1, 'good afternoon', '안녕하세요 (오후 인사)', 'phrase', 'collocation'),
+  (1, 'good evening', '안녕하세요 (저녁 인사)', 'phrase', 'collocation'),
+  (1, 'goodbye', '안녕히 가세요', 'phrase', 'idiom'),
+  (1, 'name', '이름', 'noun', 'word'),
+  (1, 'nice', '좋은, 반가운', 'adjective', 'word'),
+  (1, 'meet', '만나다', 'verb', 'word'),
+  (1, 'teacher', '선생님', 'noun', 'word'),
+  (1, 'student', '학생', 'noun', 'word'),
+  (1, 'please', '부탁합니다', 'adverb', 'word'),
+  (2, 'one', '하나', 'noun', 'word'),
+  (2, 'two', '둘', 'noun', 'word'),
+  (2, 'three', '셋', 'noun', 'word'),
+  (2, 'four', '넷', 'noun', 'word'),
+  (2, 'five', '다섯', 'noun', 'word'),
+  (2, 'six', '여섯', 'noun', 'word'),
+  (2, 'seven', '일곱', 'noun', 'word'),
+  (2, 'eight', '여덟', 'noun', 'word'),
+  (2, 'nine', '아홉', 'noun', 'word'),
+  (2, 'ten', '열', 'noun', 'word'),
+  (2, 'old', '나이가 ~인, 오래된', 'adjective', 'word'),
+  (2, 'year', '해, 년', 'noun', 'word'),
+  (2, 'birthday', '생일', 'noun', 'word'),
+  (3, 'father', '아버지', 'noun', 'word'),
+  (3, 'mother', '어머니', 'noun', 'word'),
+  (3, 'brother', '형, 오빠, 남동생', 'noun', 'word'),
+  (3, 'sister', '누나, 언니, 여동생', 'noun', 'word'),
+  (3, 'grandfather', '할아버지', 'noun', 'word'),
+  (3, 'grandmother', '할머니', 'noun', 'word'),
+  (3, 'parents', '부모님', 'noun', 'word'),
+  (3, 'family', '가족', 'noun', 'word'),
+  (3, 'baby', '아기', 'noun', 'word'),
+  (3, 'tall', '키가 큰', 'adjective', 'word'),
+  (3, 'kind', '친절한', 'adjective', 'word'),
+  (3, 'this', '이것, 이 사람', 'pronoun', 'word'),
+  (3, 'that', '저것, 저 사람', 'pronoun', 'word'),
+  (3, 'love', '사랑하다', 'verb', 'word'),
+  (4, 'pen', '펜', 'noun', 'word'),
+  (4, 'pencil', '연필', 'noun', 'word'),
+  (4, 'book', '책', 'noun', 'word'),
+  (4, 'notebook', '공책', 'noun', 'word'),
+  (4, 'eraser', '지우개', 'noun', 'word'),
+  (4, 'ruler', '자', 'noun', 'word'),
+  (4, 'bag', '가방', 'noun', 'word'),
+  (4, 'desk', '책상', 'noun', 'word'),
+  (4, 'chair', '의자', 'noun', 'word'),
+  (4, 'key', '열쇠', 'noun', 'word'),
+  (4, 'cup', '컵', 'noun', 'word'),
+  (4, 'box', '상자', 'noun', 'word'),
+  (4, 'thing', '물건, 것', 'noun', 'word'),
+  (4, 'have', '가지다', 'verb', 'word'),
+  (4, 'my', '나의', 'determiner', 'word'),
+  (5, 'red', '빨강', 'adjective', 'word'),
+  (5, 'blue', '파랑', 'adjective', 'word'),
+  (5, 'yellow', '노랑', 'adjective', 'word'),
+  (5, 'green', '초록', 'adjective', 'word'),
+  (5, 'black', '검정', 'adjective', 'word'),
+  (5, 'white', '하양', 'adjective', 'word'),
+  (5, 'orange', '주황', 'adjective', 'word'),
+  (5, 'pink', '분홍', 'adjective', 'word'),
+  (5, 'brown', '갈색', 'adjective', 'word'),
+  (5, 'circle', '원', 'noun', 'word'),
+  (5, 'square', '정사각형', 'noun', 'word'),
+  (5, 'triangle', '삼각형', 'noun', 'word'),
+  (5, 'big', '큰', 'adjective', 'word'),
+  (5, 'small', '작은', 'adjective', 'word'),
+  (5, 'long', '긴', 'adjective', 'word'),
+  (5, 'color', '색깔', 'noun', 'word'),
+  (6, 'classroom', '교실', 'noun', 'word'),
+  (6, 'board', '칠판', 'noun', 'word'),
+  (6, 'window', '창문', 'noun', 'word'),
+  (6, 'door', '문', 'noun', 'word'),
+  (6, 'clock', '시계', 'noun', 'word'),
+  (6, 'map', '지도', 'noun', 'word'),
+  (6, 'picture', '그림, 사진', 'noun', 'word'),
+  (6, 'computer', '컴퓨터', 'noun', 'word'),
+  (6, 'wall', '벽', 'noun', 'word'),
+  (6, 'floor', '바닥', 'noun', 'word'),
+  (6, 'light', '전등, 빛', 'noun', 'word'),
+  (6, 'school', '학교', 'noun', 'word'),
+  (6, 'class', '반, 수업', 'noun', 'word'),
+  (6, 'many', '많은', 'determiner', 'word'),
+  (6, 'some', '몇몇의', 'determiner', 'word'),
+  (6, 'there', '거기에', 'adverb', 'word'),
+  (6, 'new', '새로운', 'adjective', 'word'),
+  (8, 'in', '~ 안에', 'preposition', 'word'),
+  (8, 'on', '~ 위에', 'preposition', 'word'),
+  (8, 'under', '~ 아래에', 'preposition', 'word'),
+  (8, 'next to', '~ 옆에', 'preposition', 'collocation'),
+  (8, 'behind', '~ 뒤에', 'preposition', 'word'),
+  (8, 'in front of', '~ 앞에', 'preposition', 'collocation'),
+  (8, 'room', '방', 'noun', 'word'),
+  (8, 'table', '탁자', 'noun', 'word'),
+  (8, 'bed', '침대', 'noun', 'word'),
+  (8, 'sofa', '소파', 'noun', 'word'),
+  (8, 'kitchen', '부엌', 'noun', 'word'),
+  (8, 'house', '집', 'noun', 'word'),
+  (8, 'where', '어디에', 'adverb', 'word'),
+  (8, 'here', '여기에', 'adverb', 'word'),
+  (8, 'put', '놓다', 'verb', 'word'),
+  (8, 'find', '찾다', 'verb', 'word'),
+  (8, 'look', '보다', 'verb', 'word'),
+  (9, 'rice', '밥, 쌀', 'noun', 'word'),
+  (9, 'bread', '빵', 'noun', 'word'),
+  (9, 'milk', '우유', 'noun', 'word'),
+  (9, 'water', '물', 'noun', 'word'),
+  (9, 'juice', '주스', 'noun', 'word'),
+  (9, 'apple', '사과', 'noun', 'word'),
+  (9, 'banana', '바나나', 'noun', 'word'),
+  (9, 'egg', '달걀', 'noun', 'word'),
+  (9, 'meat', '고기', 'noun', 'word'),
+  (9, 'fish', '생선', 'noun', 'word'),
+  (9, 'soup', '국, 수프', 'noun', 'word'),
+  (9, 'cake', '케이크', 'noun', 'word'),
+  (9, 'food', '음식', 'noun', 'word'),
+  (9, 'eat', '먹다', 'verb', 'word'),
+  (9, 'drink', '마시다', 'verb', 'word'),
+  (9, 'like', '좋아하다', 'verb', 'word'),
+  (9, 'want', '원하다', 'verb', 'word'),
+  (9, 'hungry', '배고픈', 'adjective', 'word'),
+  (10, 'dog', '개', 'noun', 'word'),
+  (10, 'cat', '고양이', 'noun', 'word'),
+  (10, 'bird', '새', 'noun', 'word'),
+  (10, 'rabbit', '토끼', 'noun', 'word'),
+  (10, 'horse', '말', 'noun', 'word'),
+  (10, 'cow', '소', 'noun', 'word'),
+  (10, 'pig', '돼지', 'noun', 'word'),
+  (10, 'lion', '사자', 'noun', 'word'),
+  (10, 'tiger', '호랑이', 'noun', 'word'),
+  (10, 'elephant', '코끼리', 'noun', 'word'),
+  (10, 'monkey', '원숭이', 'noun', 'word'),
+  (10, 'animal', '동물', 'noun', 'word'),
+  (10, 'pet', '반려동물', 'noun', 'word'),
+  (10, 'tail', '꼬리', 'noun', 'word'),
+  (10, 'run', '달리다', 'verb', 'word'),
+  (10, 'jump', '뛰다', 'verb', 'word'),
+  (10, 'fly', '날다', 'verb', 'word'),
+  (10, 'cute', '귀여운', 'adjective', 'word'),
+  (11, 'get up', '일어나다', 'verb', 'phrasal_verb'),
+  (11, 'wash', '씻다', 'verb', 'word'),
+  (11, 'go', '가다', 'verb', 'word'),
+  (11, 'come', '오다', 'verb', 'word'),
+  (11, 'study', '공부하다', 'verb', 'word'),
+  (11, 'play', '놀다', 'verb', 'word'),
+  (11, 'sleep', '자다', 'verb', 'word'),
+  (11, 'morning', '아침', 'noun', 'word'),
+  (11, 'afternoon', '오후', 'noun', 'word'),
+  (11, 'evening', '저녁', 'noun', 'word'),
+  (11, 'night', '밤', 'noun', 'word'),
+  (11, 'day', '날, 하루', 'noun', 'word'),
+  (11, 'time', '시간', 'noun', 'word'),
+  (11, 'home', '집', 'noun', 'word'),
+  (11, 'breakfast', '아침 식사', 'noun', 'word'),
+  (11, 'lunch', '점심 식사', 'noun', 'word'),
+  (11, 'dinner', '저녁 식사', 'noun', 'word'),
+  (11, 'early', '이른, 일찍', 'adjective', 'word'),
+  (11, 'late', '늦은, 늦게', 'adjective', 'word'),
+  (12, 'can', '~할 수 있다', 'verb', 'word'),
+  (12, 'swim', '수영하다', 'verb', 'word'),
+  (12, 'ride', '타다', 'verb', 'word'),
+  (12, 'sing', '노래하다', 'verb', 'word'),
+  (12, 'dance', '춤추다', 'verb', 'word'),
+  (12, 'draw', '그리다', 'verb', 'word'),
+  (12, 'cook', '요리하다', 'verb', 'word'),
+  (12, 'read', '읽다', 'verb', 'word'),
+  (12, 'write', '쓰다', 'verb', 'word'),
+  (12, 'speak', '말하다', 'verb', 'word'),
+  (12, 'help', '돕다', 'verb', 'word'),
+  (12, 'try', '해 보다', 'verb', 'word'),
+  (12, 'well', '잘', 'adverb', 'word'),
+  (12, 'again', '다시', 'adverb', 'word'),
+  (12, 'together', '함께', 'adverb', 'word'),
+  (12, 'English', '영어', 'noun', 'word'),
+  (12, 'Korean', '한국어', 'noun', 'word'),
+  (12, 'bike', '자전거', 'noun', 'word'),
+  (12, 'song', '노래', 'noun', 'word'),
+  (12, 'game', '놀이, 게임', 'noun', 'word'),
+  (13, 'friend', '친구', 'noun', 'word'),
+  (13, 'classmate', '반 친구', 'noun', 'word'),
+  (13, 'boy', '소년', 'noun', 'word'),
+  (13, 'girl', '소녀', 'noun', 'word'),
+  (13, 'party', '파티', 'noun', 'word'),
+  (13, 'gift', '선물', 'noun', 'word'),
+  (13, 'funny', '재미있는', 'adjective', 'word'),
+  (13, 'smart', '똑똑한', 'adjective', 'word'),
+  (13, 'quiet', '조용한', 'adjective', 'word'),
+  (13, 'best', '가장 좋은', 'adjective', 'word'),
+  (13, 'happy', '행복한', 'adjective', 'word'),
+  (13, 'sad', '슬픈', 'adjective', 'word'),
+  (13, 'same', '같은', 'adjective', 'word'),
+  (13, 'different', '다른', 'adjective', 'word'),
+  (13, 'favorite', '가장 좋아하는', 'adjective', 'word'),
+  (13, 'know', '알다', 'verb', 'word'),
+  (13, 'talk', '이야기하다', 'verb', 'word'),
+  (13, 'laugh', '웃다', 'verb', 'word'),
+  (13, 'share', '나누다', 'verb', 'word'),
+  (13, 'always', '항상', 'adverb', 'word'),
+  (13, 'sometimes', '가끔', 'adverb', 'word')
+) as v(unit_order, headword, meaning_ko, pos, item_type)
 join app_6.units u
   on u.level_code = 'A1.1' and u.order_index = v.unit_order;
 

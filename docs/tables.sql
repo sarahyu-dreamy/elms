@@ -109,6 +109,38 @@ create table if not exists app_6.skill_profiles (
   unique (student_sub, skill)
 );
 
+-- 어휘·문법 항목. 단원에 붙지 않는 항목도 있을 수 있어 unit_id 는 nullable 입니다.
+create table if not exists app_6.lexical_items (
+  id           uuid primary key default gen_random_uuid(),
+  created_at   timestamptz not null default now(),
+  unit_id      uuid references app_6.units(id) on delete set null,
+  headword     text not null,
+  item_type    text not null default 'word',  -- word/collocation/phrasal_verb/idiom
+  pos          text,
+  cefr_level   text not null,
+  meaning_ko   text not null,
+  example_en   text,
+  example_ko   text,
+  audio_url    text,
+  tags         text,
+  is_published boolean not null default false,
+  created_by   text
+);
+
+create table if not exists app_6.grammar_points (
+  id             uuid primary key default gen_random_uuid(),
+  created_at     timestamptz not null default now(),
+  unit_id        uuid references app_6.units(id) on delete set null,
+  title          text not null,
+  cefr_level     text not null,
+  category       text,
+  can_do         text,                        -- CEFR can-do 형식 성취 기준
+  explanation_md text,
+  order_index    integer not null default 0,
+  is_published   boolean not null default false,
+  created_by     text
+);
+
 -- ════════ 2부. 자료·과제 단계에서 ════════
 
 create table if not exists app_6.materials (
