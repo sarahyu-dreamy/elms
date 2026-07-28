@@ -92,10 +92,25 @@ export async function GET(request: Request) {
           },
           { onConflict: 'sub' },
         )
+
+        // 명단에 이름만 올라와 있던 배정에 sub 를 채웁니다.
+        // 교사가 학기 초에 이름으로 명단을 넣어 두고, 학생이 로그인하면 연결됩니다.
+        //
+        // 이름이 정확히 같을 때만 연결합니다. 동명이인(박세은A / 박세은B)은
+        // 자동으로 붙지 않고 교사가 직접 지정해야 합니다. 잘못 붙으면
+        // 남의 성적을 보게 되므로, 애매하면 안 붙이는 쪽이 맞습니다.
+        const name = str('name')
+        if (name) {
+          await supabaseWrite
+            .from(TABLES.enrollments)
+            .update({ student_sub: sub })
+            .eq('student_name', name)
+            .is('student_sub', null)
+        }
       }
     }
   } catch {
-    // 프로필 기록 실패가 로그인 자체를 막을 이유는 없습니다.
+    // 프로필 기록·명단 연결 실패가 로그인 자체를 막을 이유는 없습니다.
   }
 
   const res = NextResponse.redirect(`${origin}${next || landing}`)

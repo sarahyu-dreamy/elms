@@ -6,12 +6,15 @@ import { supabaseWrite } from '@/lib/db-write'
 import { supabase } from '@/lib/supabase'
 import { A1_1 } from '@/lib/seed/a1-1'
 import type { SeedLevel } from '@/lib/seed/types'
+import { fetchTableColumns, keepExistingColumns } from '@/lib/seed/columns'
 import { dbErrorMessage } from '@/lib/form'
 
 export interface SeedResult {
   ok: boolean
   error?: string
   counts?: { units: number; canDo: number; grammar: number; lexical: number; materials: number }
+  /** 실제 테이블에 없어서 빼고 넣은 컬럼 */
+  skipped?: string[]
 }
 
 const CHUNK = 100
@@ -50,11 +53,21 @@ async function seedLevel(level: SeedLevel): Promise<SeedResult> {
     }
   }
 
+  // 실제 컬럼을 확인해 둡니다. 콘솔 폼으로 만든 테이블은 컬럼이 빠져 있을 수 있습니다.
+  const columns = await fetchTableColumns()
+  const skipped = new Set<string>()
+
+  const fit = (table: string, rows: Record<string, unknown>[]) => {
+    const r = keepExistingColumns(rows, columns[table])
+    r.dropped.forEach((d) => skipped.add(`${table}.${d}`))
+    return r.rows
+  }
+
   // 1. 단원 — id 를 돌려받아야 나머지를 붙일 수 있습니다
   const { data: units, error: unitError } = await supabaseWrite
     .from('units')
     .insert(
-      level.units.map((u) => ({
+      fit('units', level.units.map((u) => ({
         level_code: level.levelCode,
         order_index: u.order,
         title: u.title,
@@ -68,7 +81,7 @@ async function seedLevel(level: SeedLevel): Promise<SeedResult> {
           .filter(Boolean)
           .join('\n'),
         is_published: true,
-      })),
+      }))),
     )
     .select('id, order_index')
 
@@ -132,7 +145,7 @@ async function seedLevel(level: SeedLevel): Promise<SeedResult> {
     ['lexical_items', lexicalRows],
     ['materials', materialRows],
   ] as const) {
-    const err = await insertChunked(table, rows as Record<string, unknown>[])
+    const err = await insertChunked(table, fit(table, rows as Record<string, unknown>[]))
     if (err) return { ok: false, error: `${err}\n단원은 이미 들어갔습니다. 지우고 다시 시도해 주세요.` }
   }
 
@@ -148,6 +161,7 @@ async function seedLevel(level: SeedLevel): Promise<SeedResult> {
       lexical: lexicalRows.length,
       materials: materialRows.length,
     },
+    skipped: skipped.size > 0 ? [...skipped] : undefined,
   }
 }
 

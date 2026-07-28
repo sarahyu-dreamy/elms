@@ -46,11 +46,10 @@ create table if not exists app_6.enrollments (
   id          uuid primary key default gen_random_uuid(),
   created_at  timestamptz not null default now(),
   class_id uuid not null,
-  student_sub text not null,
-  student_name text  -- 명단 표시용 캐시,
+  student_name text not null  -- 명단의 이름,
+  student_sub text  -- 로그인 후 연결. 처음엔 비어 있습니다,
   cohort text,
-  status text default 'active'  -- active / dropped,
-  unique (class_id, student_sub)
+  status text default 'active'  -- active / dropped
 );
 
 -- 단원
