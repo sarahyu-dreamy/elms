@@ -146,10 +146,12 @@ create table if not exists ${schema}.skill_profiles (
 
 -- ════════ 자료·과제 ════════
 
+-- class_id 가 비어 있으면 교육과정 표준 자료(모든 반 공통),
+-- 채워져 있으면 그 반 전용 자료입니다.
 create table if not exists ${schema}.materials (
   id            uuid primary key default gen_random_uuid(),
   created_at    timestamptz not null default now(),
-  class_id      uuid not null references ${schema}.classes(id) on delete cascade,
+  class_id      uuid references ${schema}.classes(id) on delete cascade,
   unit_id       uuid references ${schema}.units(id) on delete set null,
   title         text not null,
   material_type text not null default 'reading', -- reading/grammar/audio/slide/link

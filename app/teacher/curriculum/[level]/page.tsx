@@ -4,7 +4,14 @@ import { SKILLS, type Skill } from '@/lib/cefr'
 import { levelByCode } from '@/lib/levels'
 import { seedFor } from '@/lib/seed/a1-1'
 import { generateSeedSql } from '@/lib/seed/sql'
-import { duplicateWords, totalCanDo, totalGrammar, totalVocab, type SeedUnit } from '@/lib/seed/types'
+import {
+  duplicateWords,
+  outOfVocabWords,
+  totalCanDo,
+  totalGrammar,
+  totalVocab,
+  type SeedUnit,
+} from '@/lib/seed/types'
 import { SESSIONS_PER_UNIT, UNITS_PER_LEVEL } from '@/lib/lms'
 import { LevelBadge, PageHeader, StatCard } from '@/components/ui'
 import { CopyText } from '@/components/copy-text'
@@ -97,11 +104,19 @@ function Checks({ seed, target }: { seed: ReturnType<typeof seedFor> & object; t
   if (thin.length > 0) {
     problems.push(`성취기준이 8개 미만인 단원: ${thin.join(', ')}주`)
   }
+  const oov = outOfVocabWords(seed)
+  if (oov.length > 0) {
+    problems.push(`아직 안 배운 단어가 예문에 있습니다: ${oov.slice(0, 10).join(', ')}`)
+  }
+  const noText = seed.units.filter((u) => !u.text).map((u) => u.order)
+  if (noText.length > 0) {
+    problems.push(`지문이 없는 단원: ${noText.join(', ')}주`)
+  }
 
   if (problems.length === 0) {
     return (
       <div className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-        단원 수 · 어휘 합계 · 중복 단어 · 성취기준 개수 모두 이상 없습니다.
+        단원 수 · 어휘 합계 · 중복 단어 · 성취기준 개수 · 예문 어휘 범위 · 지문 유무 모두 이상 없습니다.
       </div>
     )
   }
@@ -160,19 +175,59 @@ function UnitCard({ unit }: { unit: SeedUnit }) {
         ))}
       </div>
 
+      {unit.text && (
+        <details className="border-t border-slate-100">
+          <summary className="cursor-pointer px-4 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50">
+            {unit.text.kind === 'dialogue' ? '대화문' : '읽기 지문'} · {unit.text.title}
+          </summary>
+          <div className="grid gap-px bg-slate-100 sm:grid-cols-2">
+            <pre className="whitespace-pre-wrap bg-white px-4 py-3 font-sans text-sm leading-relaxed text-slate-800">
+              {unit.text.body}
+            </pre>
+            <pre className="whitespace-pre-wrap bg-white px-4 py-3 font-sans text-sm leading-relaxed text-slate-500">
+              {unit.text.bodyKo}
+            </pre>
+          </div>
+        </details>
+      )}
+
+      {unit.grammar.some((g) => g.explanation) && (
+        <details className="border-t border-slate-100">
+          <summary className="cursor-pointer px-4 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50">
+            문법 설명 {unit.grammar.filter((g) => g.explanation).length}개
+          </summary>
+          <div className="space-y-3 px-4 pb-3">
+            {unit.grammar
+              .filter((g) => g.explanation)
+              .map((g) => (
+                <div key={g.title}>
+                  <p className="text-sm font-medium text-slate-800">{g.title}</p>
+                  {g.canDo && <p className="text-xs text-sky-700">{g.canDo}</p>}
+                  <pre className="mt-1 whitespace-pre-wrap font-sans text-sm leading-relaxed text-slate-600">
+                    {g.explanation}
+                  </pre>
+                </div>
+              ))}
+          </div>
+        </details>
+      )}
+
       {unit.vocabulary.length > 0 && (
         <details className="border-t border-slate-100">
           <summary className="cursor-pointer px-4 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50">
-            어휘 {unit.vocabulary.length}개 보기
+            어휘 {unit.vocabulary.length}개 · 예문 포함
           </summary>
-          <ul className="grid gap-x-6 gap-y-1 px-4 pb-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="divide-y divide-slate-50 px-4 pb-3">
             {unit.vocabulary.map((v) => (
-              <li key={v.en} className="flex items-baseline justify-between gap-2 border-b border-slate-50 py-1">
-                <span className="font-medium text-slate-800">
-                  {v.en}
-                  <span className="ml-1.5 text-xs font-normal text-slate-400">{v.pos}</span>
-                </span>
-                <span className="shrink-0 text-slate-500">{v.ko}</span>
+              <li key={v.en} className="py-1.5">
+                <div className="flex items-baseline gap-2">
+                  <span className="font-medium text-slate-800">{v.en}</span>
+                  <span className="text-xs text-slate-400">{v.pos}</span>
+                  <span className="text-sm text-slate-500">{v.ko}</span>
+                </div>
+                <p className="mt-0.5 text-sm text-slate-600">
+                  {v.ex} <span className="text-slate-400">— {v.exKo}</span>
+                </p>
               </li>
             ))}
           </ul>

@@ -47,9 +47,18 @@ export function generateSeedSql(level: SeedLevel, schema = 'app_6'): string {
     .flatMap((u) =>
       u.vocabulary.map(
         (v) =>
-          `  (${u.order}, ${q(v.en)}, ${q(v.ko)}, ${q(v.pos)}, ${q(v.type ?? 'word')})`,
+          `  (${u.order}, ${q(v.en)}, ${q(v.ko)}, ${q(v.pos)}, ${q(v.type ?? 'word')}, ${q(v.ex)}, ${q(v.exKo)})`,
       ),
     )
+    .join(',\n')
+
+  const textUnits = level.units.filter((u) => u.text)
+  const materialRows = textUnits
+    .map((u) => {
+      const t = u.text!
+      const body = `${t.body}\n\n---\n\n${t.bodyKo}`
+      return `  (${u.order}, ${q(t.title)}, ${q(t.kind === 'dialogue' ? 'reading' : 'reading')}, ${q(body)})`
+    })
     .join(',\n')
 
   return `-- ${level.levelCode} 교육과정 원안 적재
@@ -79,23 +88,34 @@ ${canDoRows}
 join ${schema}.units u
   on u.level_code = ${lc} and u.order_index = v.unit_order;
 
--- 3. 문법 항목
+-- 3. 문법 항목 (설명 포함)
 insert into ${schema}.grammar_points
-  (unit_id, title, can_do, cefr_level, order_index, is_published)
-select u.id, v.title, v.can_do, ${q(level.levelCode.slice(0, 2))}, v.ord, true
+  (unit_id, title, can_do, explanation_md, cefr_level, order_index, is_published)
+select u.id, v.title, v.can_do, v.explanation, ${q(level.levelCode.slice(0, 2))}, v.ord, true
 from (values
 ${grammarRows}
-) as v(unit_order, title, can_do, ord)
+) as v(unit_order, title, can_do, explanation, ord)
 join ${schema}.units u
   on u.level_code = ${lc} and u.order_index = v.unit_order;
 
--- 4. 어휘
+-- 4. 어휘 (예문 포함)
 insert into ${schema}.lexical_items
-  (unit_id, headword, meaning_ko, pos, item_type, cefr_level, is_published)
-select u.id, v.headword, v.meaning_ko, v.pos, v.item_type, ${q(level.levelCode.slice(0, 2))}, true
+  (unit_id, headword, meaning_ko, pos, item_type, example_en, example_ko, cefr_level, is_published)
+select u.id, v.headword, v.meaning_ko, v.pos, v.item_type, v.example_en, v.example_ko,
+       ${q(level.levelCode.slice(0, 2))}, true
 from (values
 ${vocabRows}
-) as v(unit_order, headword, meaning_ko, pos, item_type)
+) as v(unit_order, headword, meaning_ko, pos, item_type, example_en, example_ko)
+join ${schema}.units u
+  on u.level_code = ${lc} and u.order_index = v.unit_order;
+
+-- 5. 단원 지문 (class_id 가 비어 있으면 모든 반이 공유하는 표준 자료)
+insert into ${schema}.materials
+  (unit_id, class_id, title, material_type, week, body, is_published)
+select u.id, null, v.title, v.kind, u.order_index, v.body, true
+from (values
+${materialRows}
+) as v(unit_order, title, kind, body)
 join ${schema}.units u
   on u.level_code = ${lc} and u.order_index = v.unit_order;
 
