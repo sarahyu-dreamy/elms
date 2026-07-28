@@ -33,21 +33,26 @@ body {
   @apply mt-1 text-xs text-slate-500;
 }
 
-.btn {
+/* Tailwind v4 의 @apply 는 커스텀 클래스를 참조할 수 없어서,
+   공통 스타일은 셀렉터를 묶어서 한 번에 적용합니다. */
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-danger {
   @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium
     transition disabled:cursor-not-allowed disabled:opacity-50;
 }
 
 .btn-primary {
-  @apply btn bg-slate-900 text-white hover:bg-slate-700;
+  @apply bg-slate-900 text-white hover:bg-slate-700;
 }
 
 .btn-secondary {
-  @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+  @apply border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
 }
 
 .btn-danger {
-  @apply btn border border-red-200 bg-white text-red-600 hover:bg-red-50;
+  @apply border border-red-200 bg-white text-red-600 hover:bg-red-50;
 }
 
 .card {
