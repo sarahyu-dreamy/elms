@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { SESSION_COOKIE, appBaseUrl } from '@/lib/auth'
+import { SESSION_COOKIE, originOf } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
-async function handle() {
-  const res = NextResponse.redirect(appBaseUrl())
+async function handle(request: Request) {
+  const res = NextResponse.redirect(originOf(request))
   res.cookies.delete(SESSION_COOKIE)
   return res
 }

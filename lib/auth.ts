@@ -14,15 +14,31 @@ export const AUTHORIZE_URL = `${ISSUER}/oauth/authorize`
 export const TOKEN_URL = `${ISSUER}/api/oauth/token`
 export const USERINFO_URL = `${ISSUER}/api/oauth/userinfo`
 
-export function appBaseUrl(): string {
-  return (
-    process.env.APP_BASE_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
-  )
+/**
+ * 이 앱의 외부 주소.
+ *
+ * 반드시 요청 헤더에서 계산합니다. 포탈은 APP_BASE_URL 을 주입하지 않고,
+ * VERCEL_URL 은 배포마다 바뀌는 주소(english-lms-6-xxxx.vercel.app)여서
+ * 포탈에 등록된 redirect_uri 와 달라집니다. 그러면 토큰 교환이 실패합니다.
+ *
+ * 프록시(Vercel) 뒤에 있으므로 x-forwarded-* 를 우선합니다.
+ * APP_BASE_URL 은 로컬 개발용 수동 지정 수단으로만 남겨 둡니다.
+ */
+export function originOf(request: Request): string {
+  const override = process.env.APP_BASE_URL
+  if (override) return override.replace(/\/+$/, '')
+
+  const proto = request.headers.get('x-forwarded-proto') ?? 'https'
+  const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host')
+  return host ? `${proto}://${host}` : new URL(request.url).origin
 }
 
-export function redirectUri(): string {
-  return `${appBaseUrl()}/auth/callback`
+/**
+ * 로그인 시작과 콜백에서 **똑같은 값**이 나와야 합니다.
+ * 두 곳 모두 같은 호스트로 들어오므로 요청에서 계산하면 자동으로 일치합니다.
+ */
+export function redirectUriFrom(request: Request): string {
+  return `${originOf(request)}/auth/callback`
 }
 
 export type Role = 'admin' | 'student'

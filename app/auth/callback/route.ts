@@ -5,20 +5,20 @@ import {
   STATE_COOKIE,
   TOKEN_URL,
   USERINFO_URL,
-  appBaseUrl,
   isAdminSub,
-  redirectUri,
+  originOf,
+  redirectUriFrom,
 } from '@/lib/auth'
 import { supabaseWrite } from '@/lib/db-write'
 import { TABLES } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
-function fail(reason: string) {
-  return NextResponse.redirect(`${appBaseUrl()}/?auth_error=${encodeURIComponent(reason)}`)
-}
-
 export async function GET(request: Request) {
+  const origin = originOf(request)
+  const fail = (reason: string) =>
+    NextResponse.redirect(`${origin}/?auth_error=${encodeURIComponent(reason)}`)
+
   const url = new URL(request.url)
   const code = url.searchParams.get('code')
   const state = url.searchParams.get('state')
@@ -50,7 +50,7 @@ export async function GET(request: Request) {
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         code,
-        redirect_uri: redirectUri(),
+        redirect_uri: redirectUriFrom(request),
         client_id: process.env.DREAMI_CLIENT_ID!,
         client_secret: process.env.DREAMI_CLIENT_SECRET!,
       }),
@@ -98,7 +98,7 @@ export async function GET(request: Request) {
     // 프로필 기록 실패가 로그인 자체를 막을 이유는 없습니다.
   }
 
-  const res = NextResponse.redirect(`${appBaseUrl()}${next || landing}`)
+  const res = NextResponse.redirect(`${origin}${next || landing}`)
   res.cookies.set(SESSION_COOKIE, accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

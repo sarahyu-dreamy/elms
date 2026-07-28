@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { AUTHORIZE_URL, STATE_COOKIE, redirectUri } from '@/lib/auth'
+import { AUTHORIZE_URL, STATE_COOKIE, redirectUriFrom } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   const authorize = new URL(AUTHORIZE_URL)
   authorize.searchParams.set('response_type', 'code')
   authorize.searchParams.set('client_id', process.env.DREAMI_CLIENT_ID!)
-  authorize.searchParams.set('redirect_uri', redirectUri())
+  authorize.searchParams.set('redirect_uri', redirectUriFrom(request))
   authorize.searchParams.set('scope', 'openid profile email')
   authorize.searchParams.set('state', state)
 
