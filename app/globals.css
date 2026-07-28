@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans:
+    'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto,
+    'Helvetica Neue', sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+  font-family: var(--font-sans);
+  word-break: keep-all;
+}
+
+/* 폼 요소 공통 — CMS 화면 전체에서 반복되는 스타일이라 여기서 한 번에 잡습니다. */
+.field-label {
+  @apply mb-1.5 block text-sm font-medium text-slate-700;
+}
+
+.field-input {
+  @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900
+    shadow-xs outline-none transition
+    placeholder:text-slate-400
+    focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20
+    disabled:bg-slate-100 disabled:text-slate-500;
+}
+
+.field-hint {
+  @apply mt-1 text-xs text-slate-500;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium
+    transition disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.btn-primary {
+  @apply btn bg-slate-900 text-white hover:bg-slate-700;
+}
+
+.btn-secondary {
+  @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+}
+
+.btn-danger {
+  @apply btn border border-red-200 bg-white text-red-600 hover:bg-red-50;
+}
+
+.card {
+  @apply rounded-xl border border-slate-200 bg-white shadow-xs;
+}
