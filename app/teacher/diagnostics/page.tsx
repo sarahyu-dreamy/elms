@@ -1,35 +1,21 @@
 import { supabase } from '@/lib/supabase'
 import { originOf } from '@/lib/auth'
-import { TABLES } from '@/lib/types'
 import { headers } from 'next/headers'
 import { PageHeader } from '@/components/ui'
-import { CopyText } from '@/components/copy-text'
-import { generateDdl } from '@/lib/seed/ddl'
-import { generateSeedSql } from '@/lib/seed/sql'
-import { A1_1 } from '@/lib/seed/a1-1'
+import { TABLE_SPECS } from '@/lib/seed/tables'
+import { Setup } from './setup'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: '연결 진단' }
 
-/** 반 운영과 교육과정에 필요한 테이블 */
-const CORE = [
-  { table: TABLES.profiles, note: '로그인 사용자' },
-  { table: TABLES.terms, note: '학기' },
-  { table: TABLES.classes, note: '반' },
-  { table: TABLES.enrollments, note: '반-학생 배정' },
-  { table: 'units', note: '단원' },
-  { table: 'can_do_statements', note: '성취기준' },
-  { table: TABLES.lexicalItems, note: '어휘' },
-  { table: TABLES.grammarPoints, note: '문법 항목' },
-]
-
-/** 자료·과제 단계에서 쓰는 테이블 (2부) */
-const LATER = [
-  { table: TABLES.materials, note: '수업 자료' },
-  { table: TABLES.assignments, note: '과제' },
-  { table: TABLES.submissions, note: '제출·피드백' },
-  { table: TABLES.progress, note: '레벨테스트·출석·성취' },
-]
+/** 테이블 목록은 lib/seed/tables.ts 한 곳에서 옵니다 */
+const CORE = TABLE_SPECS.filter((t) => t.group === 'core' || t.group === 'curriculum').map((t) => ({
+  table: t.name,
+  note: t.label,
+}))
+const LATER = TABLE_SPECS.filter((t) => t.group === 'classwork' || t.group === 'progress').map(
+  (t) => ({ table: t.name, note: t.label }),
+)
 
 async function probe(table: string) {
   const { count, error } = await supabase.from(table).select('id', { count: 'exact', head: true })
@@ -63,28 +49,17 @@ export default async function DiagnosticsPage() {
     { label: '앱 외부 주소', value: originOf(request), ok: true },
   ]
 
-  const missing = core.filter((t) => !t.ok)
+  const missing = [...core, ...later].filter((t) => !t.ok)
+  const missingTables = missing.map((t) => t.table)
 
   return (
     <>
       <PageHeader
-        title="연결 진단"
+        title="설치·진단"
         description="배포된 앱이 실제로 어떤 백엔드를 보고 있는지, 어떤 테이블이 준비됐는지 확인합니다."
       />
 
-      {missing.length > 0 && (
-        <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <p className="font-semibold">아직 만들어지지 않은 필수 테이블 {missing.length}개</p>
-          <p className="mt-1">
-            아래 <strong>설치</strong>의 SQL 을 드리미 개발자 콘솔에 붙여넣어 실행해 주세요.
-          </p>
-        </div>
-      )}
-
-      <Setup
-        schema={process.env.NEXT_PUBLIC_SUPABASE_SCHEMA || 'app_6'}
-        seeded={Boolean(unitCount && unitCount > 0)}
-      />
+      <Setup missing={missingTables} seeded={Boolean(unitCount && unitCount > 0)} />
 
       <section className="card mb-6 overflow-hidden">
         <div className="border-b border-slate-100 px-4 py-3">
@@ -102,79 +77,10 @@ export default async function DiagnosticsPage() {
         </dl>
       </section>
 
-      <TableSection title="필수 테이블 (반 운영)" rows={core} />
+      <TableSection title="테이블 상태 — 로그인·수업·교육과정" rows={core} />
       <div className="h-6" />
-      <TableSection title="이후 필요한 테이블 (자료·과제)" rows={later} />
+      <TableSection title="테이블 상태 — 자료·과제·성취" rows={later} />
     </>
-  )
-}
-
-/**
- * 설치 절차. 콘솔이 브라우저에 있으므로 SQL 도 브라우저에서 복사할 수 있어야 합니다.
- * 저장소에서 파일을 찾아 여는 단계를 없애는 것이 목적입니다.
- */
-function Setup({ schema, seeded }: { schema: string; seeded: boolean }) {
-  const ddl = generateDdl(schema)
-  const seed = generateSeedSql(A1_1, schema)
-
-  return (
-    <section className="card mb-8 overflow-hidden">
-      <div className="border-b border-slate-100 px-4 py-3">
-        <h2 className="text-sm font-semibold text-slate-900">설치</h2>
-        <p className="mt-0.5 text-xs text-slate-500">
-          드리미 개발자 콘솔 → 백엔드 카드에서 아래 SQL 을 순서대로 실행합니다.
-        </p>
-      </div>
-
-      <div className="divide-y divide-slate-100">
-        <Step
-          n={1}
-          title="테이블 만들기"
-          note="여러 번 실행해도 안전합니다 (create table if not exists)."
-          sql={ddl}
-        />
-        <Step
-          n={2}
-          title="A1.1 교육과정 적재"
-          note={
-            seeded
-              ? '이미 단원이 들어가 있습니다. 다시 실행하면 중복되니 주의하세요.'
-              : '단원 14개 · 성취기준 112개 · 문법 30개 · 어휘 200개. 한 번만 실행하세요.'
-          }
-          sql={seed}
-          warn={seeded}
-        />
-      </div>
-    </section>
-  )
-}
-
-function Step({
-  n,
-  title,
-  note,
-  sql,
-  warn,
-}: {
-  n: number
-  title: string
-  note: string
-  sql: string
-  warn?: boolean
-}) {
-  return (
-    <div className="px-4 py-4">
-      <div className="mb-2 flex items-baseline gap-2">
-        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">
-          {n}
-        </span>
-        <div>
-          <p className="text-sm font-medium text-slate-900">{title}</p>
-          <p className={`text-xs ${warn ? 'text-amber-700' : 'text-slate-500'}`}>{note}</p>
-        </div>
-      </div>
-      <CopyText value={sql} />
-    </div>
   )
 }
 
