@@ -9,8 +9,8 @@ import { supabase } from './supabase'
  *   **DB 레벨 방어는 존재하지 않습니다.** 보안은 전적으로 앱 서버에서 잡습니다.
  *
  * 그래서 규칙은 하나입니다:
- *   쓰기는 이 파일의 supabaseWrite 로만 하고, 호출 직전에 반드시 requireEditor() /
- *   requireAdmin() 로 sub·role 을 검증한다. 클라이언트 컴포넌트에서는 절대 쓰지 않는다.
+ *   쓰기는 이 파일의 supabaseWrite 로만 하고, 호출 직전에 반드시 requireAdmin() 으로
+ *   sub 을 검증한다. 클라이언트 컴포넌트에서는 절대 쓰지 않는다.
  *
  * 쓰기 경로를 이 한 파일로 좁혀 둔 이유는, 나중에 진짜 RLS 나 service_role 키가
  * 생겼을 때 여기만 바꾸면 전체가 따라오도록 하기 위해서입니다.

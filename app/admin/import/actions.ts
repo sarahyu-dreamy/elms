@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { requireEditor } from '@/lib/auth'
+import { requireAdmin } from '@/lib/auth'
 import { supabaseWrite } from '@/lib/db-write'
 import { IMPORT_SPECS, parseImport, toDbRow, type ImportKind } from '@/lib/import-spec'
 import { bool, dbErrorMessage, str } from '@/lib/form'
@@ -18,7 +18,7 @@ export interface ImportResult {
 const CHUNK_SIZE = 200
 
 export async function runImport(_prev: ImportResult | null, fd: FormData): Promise<ImportResult> {
-  const user = await requireEditor()
+  const user = await requireAdmin()
 
   const kind = str(fd, 'kind') as ImportKind
   if (!(kind in IMPORT_SPECS)) return { ok: false, error: '가져올 대상이 올바르지 않습니다.' }

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { requireEditor } from '@/lib/auth'
+import { requireAdmin } from '@/lib/auth'
 import { supabaseWrite } from '@/lib/db-write'
 import { TABLES, type ActionResult } from '@/lib/types'
 import { CHOICE_BASED_TYPES, type QuestionType } from '@/lib/cefr'
@@ -12,7 +12,7 @@ export async function saveQuestion(
   _prev: ActionResult | null,
   fd: FormData,
 ): Promise<ActionResult> {
-  const user = await requireEditor()
+  const user = await requireAdmin()
 
   const id = str(fd, 'id')
   const prompt = str(fd, 'prompt')
@@ -64,7 +64,7 @@ export async function saveQuestion(
 }
 
 export async function deleteQuestion(fd: FormData): Promise<void> {
-  await requireEditor()
+  await requireAdmin()
   const id = str(fd, 'id')
   if (id) await supabaseWrite.from(TABLES.questions).delete().eq('id', id)
   revalidatePath('/admin/questions')

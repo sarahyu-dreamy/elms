@@ -4,7 +4,8 @@ import { AUTHORIZE_URL, STATE_COOKIE, redirectUri } from '@/lib/auth'
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
-  const from = new URL(request.url).searchParams.get('from') ?? '/admin'
+  // from 이 없으면 콜백에서 역할에 따라 /teacher 또는 /me 로 보냅니다.
+  const from = new URL(request.url).searchParams.get('from') ?? ''
 
   // CSRF 방어용 state. 로그인 후 돌아갈 경로를 같이 실어 보냅니다.
   const nonce = crypto.randomUUID()

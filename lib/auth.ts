@@ -25,16 +25,16 @@ export function redirectUri(): string {
   return `${appBaseUrl()}/auth/callback`
 }
 
-export type Role = 'admin' | 'teacher' | 'student'
+export type Role = 'admin' | 'student'
 
 export interface SessionUser {
   sub: string
   email: string | null
   name: string | null
   cohort: string | null
-  /** 포탈 role(student/teacher/admin) + ADMIN_SUBS allowlist 를 반영한 최종 역할 */
+  /** 이 앱에서의 역할 — ADMIN_SUBS 에 있으면 admin, 나머지는 전부 student */
   role: Role
-  /** 포탈이 준 원본 role — allowlist 로 승격된 경우 구분용 */
+  /** 포탈이 준 원본 role (student/teacher/admin). 화면 표시용 */
   portalRole: string | null
 }
 
@@ -46,18 +46,14 @@ function adminSubs(): string[] {
 }
 
 /**
- * 포탈 role 은 student / teacher / admin 세 값입니다.
+ * 이 LMS 의 관리자는 오직 ADMIN_SUBS allowlist 로 정합니다.
  *
- * 다만 포탈의 role 은 "교사 일반"까지만 구분하므로, 이 LMS 의 관리자는
- * ADMIN_SUBS allowlist 로 지정합니다. allowlist 에 있으면 포탈 role 과 무관하게 admin 입니다.
+ * 포탈 role 을 쓰지 않는 이유: 포탈의 'teacher' 는 학교 전체의 교직원을 뜻해서,
+ * 이 앱의 반·성적을 만질 수 있는 사람과 범위가 다릅니다. 반 개설·학생 배정·성취 입력은
+ * 명시적으로 등록된 sub 만 할 수 있어야 합니다.
  */
-export function normalizeRole(portalRole: unknown, sub: string): Role {
-  if (adminSubs().includes(sub)) return 'admin'
-
-  const v = String(portalRole ?? '').trim().toLowerCase()
-  if (v === 'admin') return 'admin'
-  if (v === 'teacher') return 'teacher'
-  return 'student'
+export function isAdminSub(sub: string): boolean {
+  return adminSubs().includes(sub)
 }
 
 /**
@@ -65,7 +61,7 @@ export function normalizeRole(portalRole: unknown, sub: string): Role {
  * 한 요청 안에서 여러 번 불러도 한 번만 나갑니다.
  */
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
-  const token = (await cookies()).get(SESSION_COOKIE)?.value
+  const token = await getAccessToken()
   if (!token) return null
 
   try {
@@ -87,7 +83,7 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
       name: str('name'),
       cohort: str('cohort'),
       portalRole: str('role'),
-      role: normalizeRole(info.role, sub),
+      role: isAdminSub(sub) ? 'admin' : 'student',
     }
   } catch {
     // 포탈이 잠시 응답하지 않는 경우 — 로그아웃 상태로 취급합니다.
@@ -95,33 +91,39 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   }
 })
 
-/** 콘텐츠(단어·문법·문항)를 편집할 수 있는 역할인가 — 교사와 관리자 */
-export function canEdit(user: SessionUser | null): boolean {
-  return user?.role === 'admin' || user?.role === 'teacher'
+/**
+ * 드리미 플랫폼 API(음성 토큰, AI 생성)를 호출할 때 Bearer 로 쓸 액세스 토큰.
+ * 서버에서만 꺼내 쓰고 클라이언트로 내보내지 않습니다.
+ */
+export async function getAccessToken(): Promise<string | null> {
+  return (await cookies()).get(SESSION_COOKIE)?.value ?? null
 }
 
-/** ADMIN_SUBS 로 지정된 관리자인가 — 계정·학생 데이터 등 상위 권한용 */
 export function isAdmin(user: SessionUser | null): boolean {
   return user?.role === 'admin'
 }
 
-/**
- * 콘텐츠 편집 가드. 비로그인은 로그인으로, 권한 없는 로그인 사용자는 홈으로 보냅니다.
- *
- * 공유 스키마라 DB 레벨 방어가 없으므로, 모든 쓰기 경로는 반드시 이 가드를 먼저 통과해야 합니다.
- * (docs/security.md 참고)
- */
-export async function requireEditor(): Promise<SessionUser> {
+/** 로그인만 요구 (학생 화면) */
+export async function requireUser(): Promise<SessionUser> {
   const user = await getSessionUser()
   if (!user) redirect('/auth/login')
-  if (!canEdit(user)) redirect('/?denied=1')
   return user
 }
 
-/** 관리자 전용 가드 */
+/**
+ * 관리자 전용 가드. 반 개설·학생 배정·자료·과제·성취 입력은 전부 이걸 통과해야 합니다.
+ *
+ * 공유 스키마라 DB 레벨 방어가 없으므로, 이 가드가 유일한 방어선입니다.
+ * (docs/security.md 참고)
+ */
 export async function requireAdmin(): Promise<SessionUser> {
   const user = await getSessionUser()
   if (!user) redirect('/auth/login')
-  if (!isAdmin(user)) redirect('/?denied=1')
+  if (user.role !== 'admin') redirect('/me?denied=1')
   return user
+}
+
+/** 로그인 후 역할에 맞는 첫 화면 */
+export function homePathFor(user: SessionUser): string {
+  return user.role === 'admin' ? '/teacher' : '/me'
 }

@@ -1,11 +1,11 @@
 import Link from 'next/link'
-import { requireEditor } from '@/lib/auth'
+import { requireAdmin } from '@/lib/auth'
 import AdminNav from './nav'
 
 export const metadata = { title: '관리자' }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireEditor()
+  const user = await requireAdmin()
 
   return (
     <div className="min-h-screen">

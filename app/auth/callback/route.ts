@@ -6,7 +6,7 @@ import {
   TOKEN_URL,
   USERINFO_URL,
   appBaseUrl,
-  normalizeRole,
+  isAdminSub,
   redirectUri,
 } from '@/lib/auth'
 import { supabaseWrite } from '@/lib/db-write'
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
   if (!expected || expected !== state) return fail('state_mismatch')
 
   // state 뒷부분에 담아 보낸 복귀 경로 — 열린 리다이렉트를 막으려 내부 경로만 허용합니다.
-  let next = '/admin'
+  let next = ''
   try {
     const decoded = Buffer.from(state.split(':')[1] ?? '', 'base64url').toString()
     if (decoded.startsWith('/') && !decoded.startsWith('//')) next = decoded
@@ -67,6 +67,7 @@ export async function GET(request: Request) {
   }
 
   // 2) userinfo → profiles 반영 (sub 를 고유키로 씁니다. 이메일은 바뀔 수 있으므로)
+  let landing = '/me'
   try {
     const infoRes = await fetch(USERINFO_URL, {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -76,6 +77,8 @@ export async function GET(request: Request) {
       const info = (await infoRes.json()) as Record<string, unknown>
       const sub = typeof info.sub === 'string' ? info.sub : null
       if (sub) {
+        if (isAdminSub(sub)) landing = '/teacher'
+
         const str = (k: string) => (typeof info[k] === 'string' ? (info[k] as string) : null)
         await supabaseWrite.from(TABLES.profiles).upsert(
           {
@@ -83,7 +86,8 @@ export async function GET(request: Request) {
             email: str('email'),
             name: str('name'),
             cohort: str('cohort'),
-            role: normalizeRole(info.role, sub),
+            portal_role: str('role'),
+            is_admin: isAdminSub(sub),
             last_login_at: new Date().toISOString(),
           },
           { onConflict: 'sub' },
@@ -94,7 +98,7 @@ export async function GET(request: Request) {
     // 프로필 기록 실패가 로그인 자체를 막을 이유는 없습니다.
   }
 
-  const res = NextResponse.redirect(`${appBaseUrl()}${next}`)
+  const res = NextResponse.redirect(`${appBaseUrl()}${next || landing}`)
   res.cookies.set(SESSION_COOKIE, accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
