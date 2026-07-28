@@ -66,18 +66,10 @@ export default async function LevelCurriculumPage({
       <section className="card mt-8 p-5">
         <h2 className="text-sm font-semibold text-slate-900">DB 적재용 SQL</h2>
         <p className="mt-1 mb-3 text-sm text-slate-600">
-          이 원안을 <code>units</code> · <code>can_do_statements</code> 테이블에 넣는 SQL 입니다.
-          테이블을 먼저 만든 뒤 콘솔에서 한 번만 실행하세요. 적재 후에는 화면에서 수정합니다.
+          이 원안을 단원·성취기준·문법·어휘 테이블에 넣는 SQL 입니다. 테이블을 먼저 만든 뒤
+          한 번만 실행하세요. 적재 후에는 화면에서 수정합니다.
         </p>
-        <CopyText value={sql} />
-        <details className="mt-3">
-          <summary className="cursor-pointer text-xs text-slate-500 hover:text-slate-800">
-            SQL 전체 보기
-          </summary>
-          <pre className="mt-2 max-h-96 overflow-auto rounded-lg bg-slate-900 p-4 text-xs leading-relaxed text-slate-100">
-            {sql}
-          </pre>
-        </details>
+        <CopyText value={sql} label="적재 SQL" />
       </section>
     </>
   )

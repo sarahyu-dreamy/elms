@@ -3,16 +3,24 @@ import { originOf } from '@/lib/auth'
 import { TABLES } from '@/lib/types'
 import { headers } from 'next/headers'
 import { PageHeader } from '@/components/ui'
+import { CopyText } from '@/components/copy-text'
+import { generateDdl } from '@/lib/seed/ddl'
+import { generateSeedSql } from '@/lib/seed/sql'
+import { A1_1 } from '@/lib/seed/a1-1'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: '연결 진단' }
 
-/** 반 운영에 필요한 테이블 (1부) */
+/** 반 운영과 교육과정에 필요한 테이블 */
 const CORE = [
   { table: TABLES.profiles, note: '로그인 사용자' },
   { table: TABLES.terms, note: '학기' },
   { table: TABLES.classes, note: '반' },
   { table: TABLES.enrollments, note: '반-학생 배정' },
+  { table: 'units', note: '단원' },
+  { table: 'can_do_statements', note: '성취기준' },
+  { table: TABLES.lexicalItems, note: '어휘' },
+  { table: TABLES.grammarPoints, note: '문법 항목' },
 ]
 
 /** 자료·과제 단계에서 쓰는 테이블 (2부) */
@@ -33,10 +41,12 @@ export default async function DiagnosticsPage() {
   const h = await headers()
   const request = new Request('https://placeholder.invalid', { headers: h })
 
-  const [core, later] = await Promise.all([
+  const [core, later, unitProbe] = await Promise.all([
     Promise.all(CORE.map(async (t) => ({ ...t, ...(await probe(t.table)) }))),
     Promise.all(LATER.map(async (t) => ({ ...t, ...(await probe(t.table)) }))),
+    supabase.from('units').select('id', { count: 'exact', head: true }),
   ])
+  const unitCount = unitProbe.error ? null : (unitProbe.count ?? 0)
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
   const host = supabaseUrl.replace(/^https?:\/\//, '').replace(/\/.*$/, '')
@@ -66,11 +76,15 @@ export default async function DiagnosticsPage() {
         <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           <p className="font-semibold">아직 만들어지지 않은 필수 테이블 {missing.length}개</p>
           <p className="mt-1">
-            드리미 개발자 콘솔 → 백엔드 카드 → 테이블에서 만들어 주세요. 컬럼 정의는 저장소의{' '}
-            <code>docs/schema.md</code>, SQL 은 <code>docs/tables.sql</code> 에 있습니다.
+            아래 <strong>설치</strong>의 SQL 을 드리미 개발자 콘솔에 붙여넣어 실행해 주세요.
           </p>
         </div>
       )}
+
+      <Setup
+        schema={process.env.NEXT_PUBLIC_SUPABASE_SCHEMA || 'app_6'}
+        seeded={Boolean(unitCount && unitCount > 0)}
+      />
 
       <section className="card mb-6 overflow-hidden">
         <div className="border-b border-slate-100 px-4 py-3">
@@ -92,6 +106,75 @@ export default async function DiagnosticsPage() {
       <div className="h-6" />
       <TableSection title="이후 필요한 테이블 (자료·과제)" rows={later} />
     </>
+  )
+}
+
+/**
+ * 설치 절차. 콘솔이 브라우저에 있으므로 SQL 도 브라우저에서 복사할 수 있어야 합니다.
+ * 저장소에서 파일을 찾아 여는 단계를 없애는 것이 목적입니다.
+ */
+function Setup({ schema, seeded }: { schema: string; seeded: boolean }) {
+  const ddl = generateDdl(schema)
+  const seed = generateSeedSql(A1_1, schema)
+
+  return (
+    <section className="card mb-8 overflow-hidden">
+      <div className="border-b border-slate-100 px-4 py-3">
+        <h2 className="text-sm font-semibold text-slate-900">설치</h2>
+        <p className="mt-0.5 text-xs text-slate-500">
+          드리미 개발자 콘솔 → 백엔드 카드에서 아래 SQL 을 순서대로 실행합니다.
+        </p>
+      </div>
+
+      <div className="divide-y divide-slate-100">
+        <Step
+          n={1}
+          title="테이블 만들기"
+          note="여러 번 실행해도 안전합니다 (create table if not exists)."
+          sql={ddl}
+        />
+        <Step
+          n={2}
+          title="A1.1 교육과정 적재"
+          note={
+            seeded
+              ? '이미 단원이 들어가 있습니다. 다시 실행하면 중복되니 주의하세요.'
+              : '단원 14개 · 성취기준 112개 · 문법 30개 · 어휘 200개. 한 번만 실행하세요.'
+          }
+          sql={seed}
+          warn={seeded}
+        />
+      </div>
+    </section>
+  )
+}
+
+function Step({
+  n,
+  title,
+  note,
+  sql,
+  warn,
+}: {
+  n: number
+  title: string
+  note: string
+  sql: string
+  warn?: boolean
+}) {
+  return (
+    <div className="px-4 py-4">
+      <div className="mb-2 flex items-baseline gap-2">
+        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">
+          {n}
+        </span>
+        <div>
+          <p className="text-sm font-medium text-slate-900">{title}</p>
+          <p className={`text-xs ${warn ? 'text-amber-700' : 'text-slate-500'}`}>{note}</p>
+        </div>
+      </div>
+      <CopyText value={sql} />
+    </div>
   )
 }
 
