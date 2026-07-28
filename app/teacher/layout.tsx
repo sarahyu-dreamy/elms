@@ -10,6 +10,7 @@ const LINKS: NavLink[] = [
   { href: '/teacher/classes', label: '반' },
   { href: '/teacher/terms', label: '학기' },
   { href: '/admin', label: '콘텐츠 은행' },
+  { href: '/teacher/diagnostics', label: '연결 진단' },
 ]
 
 export default async function TeacherLayout({ children }: { children: React.ReactNode }) {
