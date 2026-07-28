@@ -76,7 +76,7 @@ create table if not exists app_6.can_do_statements (
   id           uuid primary key default gen_random_uuid(),
   created_at   timestamptz not null default now(),
   unit_id      uuid not null references app_6.units(id) on delete cascade,
-  track        text not null default 'speaking', -- vocab / grammar / speaking
+  skill        text not null default 'speaking', -- listening / reading / speaking / writing
   statement_ko text not null,                -- "가족 구성원을 세 명 이상 소개할 수 있다."
   statement_en text,
   order_index  integer not null default 0
@@ -96,16 +96,17 @@ create table if not exists app_6.student_can_do (
   unique (student_sub, can_do_id)
 );
 
--- ★ "영역별 프로필"의 실체. 학생 한 명이 트랙마다 다른 레벨을 가집니다.
+-- ★ "영역별 프로필"의 실체. 학생 한 명이 기능마다 다른 레벨을 가집니다.
+--   (읽기 B1.1 · 말하기 A2.3 인 학생이 정상)
 create table if not exists app_6.skill_profiles (
   id          uuid primary key default gen_random_uuid(),
   created_at  timestamptz not null default now(),
   student_sub text not null,
-  track       text not null,                 -- vocab / grammar / speaking
+  skill       text not null,                 -- listening / reading / speaking / writing
   level_code  text not null,                 -- A1.1 ~ C2.3
   updated_at  timestamptz not null default now(),
   note        text,                          -- 배치고사 결과 · 승급 사유
-  unique (student_sub, track)
+  unique (student_sub, skill)
 );
 
 -- ════════ 2부. 자료·과제 단계에서 ════════

@@ -26,15 +26,21 @@ export function isCefrLevel(v: unknown): v is CefrLevel {
 }
 
 /**
- * 학습 트랙 — 학생은 단일 레벨이 아니라 트랙별 레벨을 가집니다.
- * CEFR 의 "영역별 프로필" 원칙을 이 시스템의 기능 구조에 맞춰 3축으로 잡은 것입니다.
+ * CEFR 4기능 — 학생은 단일 레벨이 아니라 기능별 레벨을 가집니다.
+ *
+ * CEFR 은 듣기·읽기·말하기·쓰기의 레벨이 서로 다를 수 있음을 전제합니다.
+ * 성취기준(can-do)도 이 4축으로 태깅하고, 승급도 축마다 따로 일어납니다.
+ *
+ * 어휘와 문법은 여기 없습니다. 이 둘은 그 자체가 목표가 아니라 4기능을
+ * 떠받치는 수단이라, CEFR 도 별도 축으로 두지 않습니다.
  */
-export const TRACKS = [
-  { value: 'vocab', label: '어휘' },
-  { value: 'grammar', label: '문법' },
-  { value: 'speaking', label: '스피킹' },
+export const SKILLS = [
+  { value: 'listening', label: '듣기', en: 'Listening' },
+  { value: 'reading', label: '읽기', en: 'Reading' },
+  { value: 'speaking', label: '말하기', en: 'Speaking' },
+  { value: 'writing', label: '쓰기', en: 'Writing' },
 ] as const
-export type Track = (typeof TRACKS)[number]['value']
+export type Skill = (typeof SKILLS)[number]['value']
 
 export const LEXICAL_ITEM_TYPES = [
   { value: 'word', label: '단어' },

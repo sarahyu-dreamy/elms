@@ -1,4 +1,5 @@
 import { CEFR_LEVELS, type CefrLevel } from './cefr'
+import { programOf, type Program } from './lms'
 
 /**
  * 레벨 체계 — CEFR 6단계를 상·중·하로 쪼갠 18단계.
@@ -18,11 +19,13 @@ export interface LevelSpec {
   step: 1 | 2 | 3
   /** 화면 표시용 — 'A1 하' */
   labelKo: string
+  /** EEP(A1–B1) / CEP(B2–C2) */
+  program: Program
   /** 이 단계까지의 누적 어휘 목표 */
   vocabTarget: number
   /** 이 단계에서 다루는 문법 초점 */
   grammar: string[]
-  /** 대표 스피킹 과제 */
+  /** 대표 말하기 과제 */
   speaking: string
   /** 성취 기준 — "무엇을 할 수 있는가" */
   canDo: string
@@ -43,6 +46,7 @@ function spec(
     band,
     step,
     labelKo: `${band} ${STEP_KO[step]}`,
+    program: programOf(band) ?? 'EEP',
     vocabTarget,
     grammar,
     speaking,
@@ -113,6 +117,15 @@ export const LEVELS: LevelSpec[] = [
 ]
 
 export const LEVEL_CODES = LEVELS.map((l) => l.code)
+
+/**
+ * 단원 커리큘럼을 만들 대상 — EEP(A1.1~B1.3) 9단계.
+ *
+ * CEP(B2 이상)는 레벨별이 아니라 주제별로 수업을 개설하므로 단원 구조를 쓰지 않습니다.
+ * 다만 레벨 자체는 배치·승급 판정에 계속 쓰이므로 LEVELS 에는 남겨 둡니다.
+ */
+export const EEP_LEVELS = LEVELS.filter((l) => l.program === 'EEP')
+export const CEP_LEVELS = LEVELS.filter((l) => l.program === 'CEP')
 
 export function levelByCode(code: string | null | undefined): LevelSpec | undefined {
   return LEVELS.find((l) => l.code === code)
