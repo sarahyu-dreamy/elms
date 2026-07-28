@@ -4,6 +4,7 @@ import { requireUser } from '@/lib/auth'
 import { TABLES, type ClassRow, type Enrollment } from '@/lib/types'
 import { labelFor, PROGRAMS } from '@/lib/lms'
 import { EmptyState, ErrorNote, PageHeader } from '@/components/ui'
+import { AccountCard } from '@/components/account-card'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: '내 반' }
@@ -40,7 +41,7 @@ export default async function StudentHome({
 
       {denied && <ErrorNote message="교사 화면은 관리자만 이용할 수 있습니다." />}
 
-      <section className="card overflow-hidden">
+      <section className="card mb-6 overflow-hidden">
         <div className="border-b border-slate-100 px-4 py-3">
           <h2 className="text-sm font-semibold text-slate-900">내 반</h2>
         </div>
@@ -65,6 +66,8 @@ export default async function StudentHome({
           </ul>
         )}
       </section>
+
+      <AccountCard user={user} />
     </>
   )
 }

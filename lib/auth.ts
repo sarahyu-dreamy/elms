@@ -54,11 +54,29 @@ export interface SessionUser {
   portalRole: string | null
 }
 
+/**
+ * 코드에 박아 두는 관리자 목록.
+ *
+ * 원래는 ADMIN_SUBS 환경변수만 쓰려 했지만, Vercel 환경변수를 포탈이 관리해서
+ * 직접 추가하지 못할 수 있습니다. 그래서 코드 쪽 경로를 함께 둡니다.
+ *
+ * 보안상 차이가 없습니다. sub 는 비밀값이 아니라 식별자이고, 이 목록에 있다고
+ * 로그인이 되는 게 아니라 "드리미 OAuth 로 로그인한 사람"이면서 "이 목록에 있는"
+ * 두 조건을 모두 만족해야 통과합니다. 남의 sub 를 안다고 그 사람이 될 수는 없습니다.
+ *
+ * 저장소가 비공개이므로 여기에 sub 를 적어도 외부에 노출되지 않습니다.
+ */
+const BUILT_IN_ADMIN_SUBS: string[] = [
+  // 예: 'dreami_user_1234',
+]
+
 function adminSubs(): string[] {
-  return (process.env.ADMIN_SUBS ?? '')
+  const fromEnv = (process.env.ADMIN_SUBS ?? '')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean)
+
+  return [...new Set([...BUILT_IN_ADMIN_SUBS, ...fromEnv])]
 }
 
 /**
