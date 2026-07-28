@@ -67,7 +67,7 @@ export interface SessionUser {
  * 저장소가 비공개이므로 여기에 sub 를 적어도 외부에 노출되지 않습니다.
  */
 const BUILT_IN_ADMIN_SUBS: string[] = [
-  // 예: 'dreami_user_1234',
+  '9e27723a-e042-4c49-a6e6-4bb1a56be272', // 유세리 선생님
 ]
 
 function adminSubs(): string[] {
