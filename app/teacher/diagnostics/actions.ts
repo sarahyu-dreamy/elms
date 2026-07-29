@@ -12,12 +12,31 @@ import { dbErrorMessage } from '@/lib/form'
 export interface SeedResult {
   ok: boolean
   error?: string
-  counts?: { units: number; canDo: number; grammar: number; lexical: number; materials: number }
+  counts?: {
+    units: number
+    canDo: number
+    grammar: number
+    lexical: number
+    materials: number
+    sessions: number
+    activities: number
+  }
   /** 실제 테이블에 없어서 빼고 넣은 컬럼 */
   skipped?: string[]
 }
 
 const CHUNK = 100
+
+/**
+ * 단원 하나의 기본 차시 배치.
+ * 대면에서 배우고 온라인에서 익히는 흐름입니다. 교사가 단원별로 바꿉니다.
+ */
+const SESSION_PLAN = [
+  { order: 1, mode: 'onsite', title: '도입 · 문법' },
+  { order: 2, mode: 'online', title: '어휘 · 지문 익히기' },
+  { order: 3, mode: 'onsite', title: '말하기 연습' },
+  { order: 4, mode: 'online', title: '녹음 · 쓰기 제출' },
+] as const
 
 async function insertChunked(table: string, rows: Record<string, unknown>[]): Promise<string | null> {
   for (let i = 0; i < rows.length; i += CHUNK) {
@@ -143,10 +162,102 @@ async function seedLevel(level: SeedLevel): Promise<SeedResult> {
     ['can_do_statements', canDoRows],
     ['grammar_points', grammarRows],
     ['lexical_items', lexicalRows],
-    ['materials', materialRows],
   ] as const) {
     const err = await insertChunked(table, fit(table, rows as Record<string, unknown>[]))
     if (err) return { ok: false, error: `${err}\n단원은 이미 들어갔습니다. 지우고 다시 시도해 주세요.` }
+  }
+
+  // 지문은 id 를 받아 두어야 활동에서 가리킬 수 있습니다
+  const { data: materials, error: materialError } = await supabaseWrite
+    .from('materials')
+    .insert(fit('materials', materialRows))
+    .select('id, unit_id')
+  if (materialError) {
+    return { ok: false, error: `materials: ${dbErrorMessage(materialError)}\n지우고 다시 시도해 주세요.` }
+  }
+  const materialOf = new Map<string, string>()
+  for (const m of materials ?? []) materialOf.set(m.unit_id as string, m.id as string)
+
+  // 차시 — 기본 배치는 대면 · 온라인 · 대면 · 온라인. 교사가 단원별로 바꿉니다.
+  const sessionRows = level.units.flatMap((u) =>
+    SESSION_PLAN.map((p) => ({
+      unit_id: idOf.get(u.order),
+      order_index: p.order,
+      mode: p.mode,
+      title: p.title,
+    })),
+  )
+
+  const { data: sessions, error: sessionError } = await supabaseWrite
+    .from('sessions')
+    .insert(fit('sessions', sessionRows))
+    .select('id, unit_id, order_index')
+  if (sessionError) {
+    return { ok: false, error: `sessions: ${dbErrorMessage(sessionError)}\n지우고 다시 시도해 주세요.` }
+  }
+
+  const sessionOf = new Map<string, string>()
+  for (const s of sessions ?? []) {
+    sessionOf.set(`${s.unit_id}:${s.order_index}`, s.id as string)
+  }
+
+  const activityRows = level.units.flatMap((u) => {
+    const unitId = idOf.get(u.order)!
+    const s2 = sessionOf.get(`${unitId}:2`)
+    const s4 = sessionOf.get(`${unitId}:4`)
+    const say = u.canDo.find((c) => c.skill === 'speaking')?.statement ?? '말하기 과제'
+    const write = u.canDo.find((c) => c.skill === 'writing')?.statement ?? '쓰기 과제'
+
+    const rows: Record<string, unknown>[] = []
+    if (s2) {
+      rows.push({
+        session_id: s2,
+        activity_type: 'vocab_drill',
+        title: u.vocabulary.length
+          ? `어휘 ${u.vocabulary.length}개 익히기`
+          : '앞 단원 어휘 복습',
+        is_required: true,
+        order_index: 1,
+        is_published: true,
+      })
+      if (u.text) {
+        rows.push({
+          session_id: s2,
+          activity_type: 'text_read',
+          title: `${u.text.kind === 'dialogue' ? '대화문' : '읽기'} — ${u.text.title}`,
+          target_id: materialOf.get(unitId) ?? null,
+          is_required: true,
+          order_index: 2,
+          is_published: true,
+        })
+      }
+    }
+    if (s4) {
+      rows.push({
+        session_id: s4,
+        activity_type: 'speaking',
+        title: '말하기 녹음',
+        instructions: say,
+        is_required: true,
+        order_index: 1,
+        is_published: true,
+      })
+      rows.push({
+        session_id: s4,
+        activity_type: 'writing',
+        title: '쓰기 제출',
+        instructions: write,
+        is_required: true,
+        order_index: 2,
+        is_published: true,
+      })
+    }
+    return rows
+  })
+
+  const activityError = await insertChunked('activities', fit('activities', activityRows))
+  if (activityError) {
+    return { ok: false, error: `${activityError}\n지우고 다시 시도해 주세요.` }
   }
 
   revalidatePath('/teacher/diagnostics')
@@ -160,6 +271,8 @@ async function seedLevel(level: SeedLevel): Promise<SeedResult> {
       grammar: grammarRows.length,
       lexical: lexicalRows.length,
       materials: materialRows.length,
+      sessions: sessionRows.length,
+      activities: activityRows.length,
     },
     skipped: skipped.size > 0 ? [...skipped] : undefined,
   }
@@ -184,6 +297,14 @@ export async function clearA11(_prev: SeedResult | null, _fd: FormData): Promise
   if (error) return { ok: false, error: dbErrorMessage(error) }
   const ids = (units ?? []).map((u) => u.id as string)
   if (ids.length === 0) return { ok: false, error: '지울 A1.1 데이터가 없습니다.' }
+
+  // 활동 → 차시 순서로 지웁니다. 활동이 차시를 가리키고 있어서 역순이면 막힙니다.
+  const { data: sessions } = await supabase.from('sessions').select('id').in('unit_id', ids)
+  const sessionIds = (sessions ?? []).map((s) => s.id as string)
+  if (sessionIds.length > 0) {
+    await supabaseWrite.from('activities').delete().in('session_id', sessionIds)
+    await supabaseWrite.from('sessions').delete().in('id', sessionIds)
+  }
 
   for (const table of ['materials', 'lexical_items', 'grammar_points', 'can_do_statements']) {
     const { error: delError } = await supabaseWrite.from(table).delete().in('unit_id', ids)

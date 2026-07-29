@@ -114,19 +114,50 @@ export interface Material extends BaseRow {
   created_by: string | null
 }
 
-export interface Assignment extends BaseRow {
-  class_id: string
+export interface Session extends BaseRow {
+  unit_id: string
+  /** 1~4 */
+  order_index: number
+  /** onsite | online */
+  mode: string
+  title: string | null
+  note: string | null
+}
+
+/**
+ * 학습 활동. 과제 테이블을 따로 두지 않고 여기에 마감일·배점을 둡니다.
+ * (lib/lms.ts 의 ACTIVITY_TYPES 주석 참고)
+ */
+export interface Activity extends BaseRow {
+  session_id: string
+  /** 비어 있으면 모든 반 공통 */
+  class_id: string | null
+  activity_type: string
   title: string
-  assignment_type: string
   instructions: string | null
+  target_id: string | null
+  /** 다음 단원 진입 조건에 포함되는가 */
+  is_required: boolean
   due_at: string | null
   max_score: number | null
+  order_index: number
   is_published: boolean
   created_by: string | null
 }
 
+export interface ActivityProgress extends BaseRow {
+  student_sub: string
+  activity_id: string
+  /** not_started | in_progress | completed */
+  status: string
+  score: number | null
+  attempts: number
+  started_at: string | null
+  completed_at: string | null
+}
+
 export interface Submission extends BaseRow {
-  assignment_id: string
+  activity_id: string
   student_sub: string
   content: string | null
   audio_url: string | null
@@ -135,6 +166,8 @@ export interface Submission extends BaseRow {
   score: number | null
   graded_by: string | null
   graded_at: string | null
+  /** 발음 API 점수. 학생도 볼 수 있습니다 */
+  pronunciation_score: number | null
 }
 
 export interface ProgressRecord extends BaseRow {
@@ -154,7 +187,9 @@ export const TABLES = {
   classes: 'classes',
   enrollments: 'enrollments',
   materials: 'materials',
-  assignments: 'assignments',
+  sessions: 'sessions',
+  activities: 'activities',
+  activityProgress: 'activity_progress',
   submissions: 'submissions',
   progress: 'progress',
   // 마일스톤 1 의 CEFR 콘텐츠 은행 (/admin)

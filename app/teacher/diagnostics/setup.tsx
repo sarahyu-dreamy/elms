@@ -93,14 +93,16 @@ export function Setup({
           <div>
             <p className="text-sm font-medium text-slate-900">A1.1 교육과정 넣기</p>
             <p className="text-xs text-slate-500">
-              단원 14 · 성취기준 112 · 문법 30 · 어휘 200 · 지문 14. 버튼 한 번이면 됩니다.
+              단원 14 · 차시 56 · 활동 56 · 성취기준 112 · 문법 30 · 어휘 200 · 지문 14.
+              버튼 한 번이면 됩니다.
             </p>
           </div>
         </div>
 
         {seedState?.ok && seedState.counts && (
           <p className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-            넣었습니다 — 단원 {seedState.counts.units} · 성취기준 {seedState.counts.canDo} · 문법{' '}
+            넣었습니다 — 단원 {seedState.counts.units} · 차시 {seedState.counts.sessions} · 활동{' '}
+            {seedState.counts.activities} · 성취기준 {seedState.counts.canDo} · 문법{' '}
             {seedState.counts.grammar} · 어휘 {seedState.counts.lexical} · 지문{' '}
             {seedState.counts.materials}
           </p>

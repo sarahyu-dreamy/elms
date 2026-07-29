@@ -126,26 +126,55 @@ create table if not exists app_6.materials (
   created_by text
 );
 
--- 과제
-create table if not exists app_6.assignments (
+-- 차시
+create table if not exists app_6.sessions (
   id          uuid primary key default gen_random_uuid(),
   created_at  timestamptz not null default now(),
-  class_id uuid not null,
-  unit_id uuid,
+  unit_id uuid not null,
+  order_index int4 not null  -- 1~4,
+  mode text not null default 'onsite'  -- onsite / online,
+  title text,
+  note text  -- 교사용 메모,
+  unique (unit_id, order_index)
+);
+
+-- 학습 활동
+create table if not exists app_6.activities (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz not null default now(),
+  session_id uuid not null,
+  class_id uuid  -- 비우면 모든 반 공통,
+  activity_type text not null default 'vocab_drill'  -- vocab_drill/text_read/quiz/speaking/writing,
   title text not null,
-  assignment_type text default 'writing'  -- writing/reading/speaking,
   instructions text,
-  due_at timestamptz,
-  max_score int4 default 100,
+  target_id uuid  -- 지문·문항 등 대상,
+  is_required bool default true  -- ★ 다음 단원 진입 조건,
+  due_at timestamptz  -- 비우면 마감 없음,
+  max_score int4,
+  order_index int4 default 0,
   is_published bool default false,
   created_by text
+);
+
+-- 학생별 활동 진행
+create table if not exists app_6.activity_progress (
+  id          uuid primary key default gen_random_uuid(),
+  created_at  timestamptz not null default now(),
+  student_sub text not null,
+  activity_id uuid not null,
+  status text default 'not_started'  -- not_started/in_progress/completed,
+  score numeric  -- 자동 채점 결과,
+  attempts int4 default 0,
+  started_at timestamptz,
+  completed_at timestamptz,
+  unique (student_sub, activity_id)
 );
 
 -- 제출·피드백
 create table if not exists app_6.submissions (
   id          uuid primary key default gen_random_uuid(),
   created_at  timestamptz not null default now(),
-  assignment_id uuid not null,
+  activity_id uuid not null,
   student_sub text not null,
   content text,
   audio_url text,
@@ -154,7 +183,8 @@ create table if not exists app_6.submissions (
   score numeric,
   graded_by text,
   graded_at timestamptz,
-  unique (assignment_id, student_sub)
+  pronunciation_score numeric  -- 발음 API 점수. 학생도 봅니다,
+  unique (activity_id, student_sub)
 );
 
 -- 학생별 성취 기록

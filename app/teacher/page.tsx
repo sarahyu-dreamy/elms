@@ -14,7 +14,7 @@ export default async function TeacherDashboard() {
   const [classesRes, enrollRes, assignRes] = await Promise.all([
     supabase.from(TABLES.classes).select('*').eq('is_active', true).order('name'),
     supabase.from(TABLES.enrollments).select('id', { count: 'exact', head: true }).eq('status', 'active'),
-    supabase.from(TABLES.assignments).select('id', { count: 'exact', head: true }),
+    supabase.from(TABLES.activities).select('id', { count: 'exact', head: true }),
   ])
 
   const classes = (classesRes.data ?? []) as ClassRow[]
@@ -41,7 +41,7 @@ export default async function TeacherDashboard() {
             <p className="mt-1">
               드리미 개발자 콘솔 → 백엔드 카드 → 테이블에서{' '}
               <code>terms</code>, <code>classes</code>, <code>enrollments</code>,{' '}
-              <code>materials</code>, <code>assignments</code>, <code>submissions</code>,{' '}
+              <code>materials</code>, <code>sessions</code>, <code>activities</code>,{' '}
               <code>progress</code> 를 만들어 주세요. 컬럼 정의는 저장소의{' '}
               <code>docs/schema.md</code> 에 있습니다.
             </p>
@@ -52,7 +52,7 @@ export default async function TeacherDashboard() {
       <div className="mb-8 grid gap-3 sm:grid-cols-3">
         <StatCard label="운영 중인 반" value={setupNeeded ? '—' : classes.length} href="/teacher/classes" />
         <StatCard label="수강 중인 학생" value={enrollRes.error ? '—' : (enrollRes.count ?? 0)} />
-        <StatCard label="등록된 과제" value={assignRes.error ? '—' : (assignRes.count ?? 0)} />
+        <StatCard label="학습 활동" value={assignRes.error ? '—' : (assignRes.count ?? 0)} />
       </div>
 
       <section className="card overflow-hidden">

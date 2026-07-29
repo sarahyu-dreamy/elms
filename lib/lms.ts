@@ -54,6 +54,43 @@ export const SESSIONS_PER_UNIT = WEEKS_PER_UNIT * SESSIONS_PER_WEEK // 4
 /** 통합·복습 단원의 순번 (중간 점검 / 기말 평가) */
 export const REVIEW_UNIT_ORDERS = [7, 14]
 
+/** 차시 방식 — 단원마다 대면/온라인 비중을 다르게 잡습니다 */
+export const SESSION_MODES = [
+  { value: 'onsite', label: '대면' },
+  { value: 'online', label: '온라인' },
+] as const
+export type SessionMode = (typeof SESSION_MODES)[number]['value']
+
+/**
+ * 온라인 차시의 학습 활동.
+ *
+ * 과제(assignment)를 따로 두지 않습니다. "쓰기 과제 제출"은 온라인 차시의
+ * 활동이면서 동시에 과제입니다. 둘로 나누면 교사가 매번 어디에 낼지 고민하고
+ * 학생 화면도 두 군데로 갈립니다. 마감일과 배점을 활동에 두면 과제가 됩니다.
+ */
+export const ACTIVITY_TYPES = [
+  { value: 'vocab_drill', label: '어휘 반복', autoGraded: true, needsSubmission: false },
+  { value: 'text_read', label: '지문 읽기·듣기', autoGraded: true, needsSubmission: false },
+  { value: 'quiz', label: '확인 문제', autoGraded: true, needsSubmission: false },
+  { value: 'speaking', label: '말하기 녹음', autoGraded: false, needsSubmission: true },
+  { value: 'writing', label: '쓰기 제출', autoGraded: false, needsSubmission: true },
+] as const
+export type ActivityType = (typeof ACTIVITY_TYPES)[number]['value']
+
+export const ACTIVITY_STATUS = [
+  { value: 'not_started', label: '시작 전' },
+  { value: 'in_progress', label: '진행 중' },
+  { value: 'completed', label: '완료' },
+] as const
+
+/**
+ * 단원 진입 규칙 — 앞 단원의 **필수** 활동을 모두 마쳐야 다음 단원에 들어갑니다.
+ *
+ * 자기주도라 앞당겨 하는 것은 막지 않되, 건너뛰는 것은 막습니다.
+ * 밀린 학생은 교사 화면에 모여 보입니다.
+ */
+export const UNIT_GATE = { requireAllRequiredActivities: true } as const
+
 export const MATERIAL_TYPES = [
   { value: 'reading', label: '읽기' },
   { value: 'grammar', label: '문법' },
@@ -62,13 +99,6 @@ export const MATERIAL_TYPES = [
   { value: 'link', label: '링크' },
 ] as const
 export type MaterialType = (typeof MATERIAL_TYPES)[number]['value']
-
-export const ASSIGNMENT_TYPES = [
-  { value: 'writing', label: '쓰기' },
-  { value: 'reading', label: '읽기' },
-  { value: 'speaking', label: '말하기' },
-] as const
-export type AssignmentType = (typeof ASSIGNMENT_TYPES)[number]['value']
 
 export const PROGRESS_TYPES = [
   { value: 'level_test', label: '레벨테스트' },
